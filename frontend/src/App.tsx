@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CssVarsProvider } from '@mui/joy/styles';
 import CssBaseline from '@mui/joy/CssBaseline';
 import Autocomplete from '@mui/joy/Autocomplete';
@@ -37,6 +37,8 @@ import Layout from './components/Layout';
 import Header from './components/Header';
 import Navigation from './components/Navigation';
 
+// import axios from 'axios';
+
 type Greeting = {
   id: number;
   name: string;
@@ -52,17 +54,36 @@ type Greeting = {
 };
 
 export default function TeamExample() {
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // State to hold the fetched greeting data
-  //const [greetingInfo, setGreetingInfo] = React.useState<Greeting | null>(null);
-  const [greetingsList, setGreetingsList] = React.useState<Greeting[]>([]);
+  //const [greetingInfo, setGreetingInfo] = useState<Greeting | null>(null);
+  const [greetingsList, setGreetingsList] = useState<Greeting[]>([]);
   // State for loadding and error handling
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [name, setName] = useState('');
+  const [age, setAge] = useState(0);
+  const [salary, setSalary] = useState(0);
+  const [bonus, setBonus] = useState<number | null>(null);
+  const [stock, setStock] = useState<number | null>(null);
+  const [useDevice, setUseDevice] = useState<string | null>(null);
+  const [selectedPosition, setSelectedPosition] = useState<string>('');
+
+  const handleClearForm = () => {
+    if (window.confirm('Are you sure you want to clear all fields?')) {
+      setName('');
+      setSelectedPosition('');
+      setUseDevice('');
+      setBonus(0);
+      setSalary(0);
+      setAge(15);
+    }
+  };
 
   // useEffect to fetch data when the component mounts
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchGreeting = async () => {
       try {
         const response = await fetch("/api/first"); 
@@ -118,6 +139,18 @@ export default function TeamExample() {
     'Graphic Design'
   ]
 
+  const companyRoles = [
+    'UI Engineer',
+    'Senior designer',
+    'Designer',
+    'Frontend Developer',
+    'Product Manager',
+    'Product Analyst',
+    'Graphic Designer',
+    'Game Developer',
+    'Backend engineer'
+  ]
+
   const logoUrlValues = Object.values(logoUrls);
   const logoUrlName = Object.keys(logoUrls);
 
@@ -127,7 +160,7 @@ export default function TeamExample() {
     avatar2x: `https://i.pravatar.cc/80?img=${greeting.id % 20}`,
     companyData: [
       {
-        role: greeting.position, // Change member position
+        role: companyRoles[((greeting.id || 0) % companyRoles.length)], // Change member position
         name: logoUrlName[(greeting.id || 0) % logoUrlName.length],
         logo: logoUrlValues[(greeting.id || 0) % logoUrlValues.length],
         years: '2015-now',
@@ -291,7 +324,7 @@ export default function TeamExample() {
           <Header />
         </Layout.Header>
         <Layout.SideNav>
-          <Navigation />
+          <Navigation /> 
         </Layout.SideNav>
         <Layout.SidePane>
           <Box
@@ -305,7 +338,20 @@ export default function TeamExample() {
             <Typography level="title-lg" textColor="text.secondary" component="h1">
               People
             </Typography>
-            <Button startDecorator={<PersonRoundedIcon />} size="sm">
+            <Button startDecorator={
+              <PersonRoundedIcon />}
+              size="sm"
+              onClick={() => Layout.handleAddPerson(
+                /* pass other required parameters here */
+                '', // name
+                0, // age
+                selectedPosition,
+                0, // salary
+                null, // bonus
+                null, // stock
+                null // use_device
+              )}
+            >
               Add new
             </Button>
           </Box>
@@ -317,8 +363,13 @@ export default function TeamExample() {
               justifyContent: 'space-between',
             }}
           >
-            <Typography level="title-md">Filters</Typography>
-            <Button size="sm" variant="plain">
+            <Typography level="title-md">Reset</Typography>
+            <Button
+              size="sm"
+              variant="outlined"
+              onClick={handleClearForm}
+              sx={{ transition: 'all 0.5s ease' }}
+            >
               Clear
             </Button>
           </Box>
@@ -332,9 +383,188 @@ export default function TeamExample() {
               },
             }}
           >
+
             <Accordion defaultExpanded>
               <AccordionSummary>
-                <Typography level="title-sm">Keywords</Typography>
+                <Typography level="title-sm">Name</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box sx={{ my: 2 }}>
+                  <Autocomplete
+                    size="sm"
+                    freeSolo
+                    options={[]}
+                    placeholder="Enter name (e.g. Jim)"
+                    value={name}
+                    onChange={(e, newValue) => {
+                      setName(newValue || '');
+                    }}
+                    inputValue={name}
+                    onInputChange={(e, newInputValue) => {
+                      setName(newInputValue);
+                    }}
+                    sx={{
+                      '& .MuiAutocomplete-input': {
+                        minWidth: '150px',
+                      }
+                    }}
+                  />
+                  <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Typography level="title-sm">Age</Typography>
+                    <Slider
+                      size="sm"
+                      variant="solid"
+                      valueLabelFormat={(value) => `${value} ${value === 1 ? 'year' : 'years'} old`} // Handles singular/plural
+                      value={age}
+                      onChange={(event: Event, newValue: number | number[]) => {
+                        // Handle both single value and range cases
+                        setAge(Array.isArray(newValue) ? newValue[0] : newValue);
+                      }}
+                      defaultValue={25}
+                      step={1}
+                      min={15}  // More realistic minimum age
+                      max={75}
+                      valueLabelDisplay="auto" // Only shows on hover/focus
+                      marks={[
+                        { value: 18, label: '18' },
+                        { value: 30, label: '30' },
+                        { value: 50, label: '50' },
+                        { value: 70, label: '70' },
+                      ]}
+                      sx={{
+                        '& .MuiSlider-markLabel': {
+                          fontSize: '0.75rem',
+                          top: '20px'
+                        }
+                      }}
+                    />
+                    <Typography level="body-xs" sx={{ alignSelf: 'flex-end' }}>
+                      Selected: {age} years
+                    </Typography>
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+
+            <Accordion defaultExpanded>
+              <AccordionSummary>
+                <Typography level="title-sm">Position</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box sx={{ my: 2 }}>
+                  <Autocomplete
+                    size="sm"
+                    placeholder="Enter position (Programmer or Architect)"
+                    options={[
+                      // some of Thailand provinces
+                      'Programmer',
+                      'Architect'
+                    ]}
+                    value={selectedPosition}
+                    onChange={(e, newValue) => {
+                      setSelectedPosition(newValue || '');
+                    }}
+                  />
+                  <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 1}}>
+                    <Typography level="title-sm">Salary</Typography>
+                    <Slider
+                      size="sm"
+                      variant="solid"
+                      valueLabelFormat={(value) => `${value} 💲`}
+                      value={salary}
+                      onChange={(e, newValue) => {
+                        setSalary(Array.isArray(newValue) ? newValue[0] : newValue);
+                      }}
+                      defaultValue={6000}
+                      step={10}
+                      min={0}
+                      max={10000}
+                      valueLabelDisplay="auto"
+                      marks={[
+                        { value: 3000, label: '3000' },
+                        { value: 5000, label: '5000' },
+                        { value: 7000, label: '7000' },
+                        { value: 9000, label: '9000' },
+                      ]}
+                      sx={{
+                        '& .MuiSlider-markLabel': {
+                          fontSize: '0.75rem',
+                          top: '20px'
+                        }
+                      }}
+                    />
+                     <Typography level="body-xs" sx={{ alignSelf: 'flex-end' }}>
+                      Selected: {salary}  💲
+                    </Typography>
+                  </Box>
+                  <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 1}}>
+                    <Typography level="title-sm">Bonus</Typography>
+                    <Slider
+                      size="sm"
+                      variant="solid"
+                      valueLabelFormat={(value) => `${value} 💲`}
+                      value={bonus || 0}
+                      onChange={(e, newValue) => {
+                        setBonus(Array.isArray(newValue) ? newValue[0] : newValue);
+                      }}
+                      defaultValue={6000}
+                      step={10}
+                      min={0}
+                      max={10000}
+                      valueLabelDisplay="auto"
+                      marks={[
+                        { value: 3000, label: '3000' },
+                        { value: 5000, label: '5000' },
+                        { value: 7000, label: '7000' },
+                        { value: 9000, label: '9000' },
+                      ]}
+                      sx={{
+                        '& .MuiSlider-markLabel': {
+                          fontSize: '0.75rem',
+                          top: '20px'
+                        }
+                      }}
+                    />
+                    <Typography level="body-xs" sx={{ alignSelf: 'flex-end' }}>
+                      Selected: {bonus}  💲
+                    </Typography>
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+
+            <Accordion defaultExpanded>
+              <AccordionSummary>
+                <Typography level="title-sm">UseDevice</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box sx={{ my: 2 }}>
+                  <Autocomplete
+                    size="sm"
+                    freeSolo
+                    options={[]}
+                    placeholder="Enter Use Device (e.g. Lenovo)"
+                    value={useDevice}
+                    onChange={(e, newValue) => {
+                      setUseDevice(newValue || '');
+                    }}
+                    inputValue={useDevice || ''}
+                    onInputChange={(e, newInputValue) => {
+                      setUseDevice(newInputValue);
+                    }}
+                    sx={{
+                      '& .MuiAutocomplete-input': {
+                        minWidth: '150px',
+                      }
+                    }}
+                  />
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+
+            <Accordion defaultExpanded>
+              <AccordionSummary>
+                <Typography level="title-sm">Keywords (Optional)</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Box sx={{ my: 2 }}>
@@ -382,50 +612,10 @@ export default function TeamExample() {
                 </Box>
               </AccordionDetails>
             </Accordion>
+
             <Accordion defaultExpanded>
               <AccordionSummary>
-                <Typography level="title-sm">Location</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Box sx={{ my: 2 }}>
-                  <Autocomplete
-                    size="sm"
-                    placeholder="Country, city, etc…"
-                    options={[
-                      // some of Thailand provinces
-                      'Bangkok',
-                      'Amnat Charoen',
-                      'Ang Thong',
-                      'Bueng Kan',
-                      'Buriram',
-                      'Chachoengsao',
-                      'Chai Nat',
-                      'Chaiyaphum',
-                      'Chanthaburi',
-                      'Chiang Mai',
-                      'Chiang Rai',
-                      'Chonburi',
-                    ]}
-                  />
-                  <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column' }}>
-                    <Typography level="title-sm">Range</Typography>
-                    <Slider
-                      size="sm"
-                      variant="solid"
-                      valueLabelFormat={(value) => `${value} km`}
-                      defaultValue={6}
-                      step={1}
-                      min={0}
-                      max={20}
-                      valueLabelDisplay="on"
-                    />
-                  </Box>
-                </Box>
-              </AccordionDetails>
-            </Accordion>
-            <Accordion defaultExpanded>
-              <AccordionSummary>
-                <Typography level="title-sm">Education</Typography>
+                <Typography level="title-sm">Education  (Optional)</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Box sx={{ my: 2 }}>
@@ -440,7 +630,7 @@ export default function TeamExample() {
             </Accordion>
             <Accordion defaultExpanded>
               <AccordionSummary>
-                <Typography level="title-sm">Years of Experience</Typography>
+                <Typography level="title-sm">Years of Experience (Optional)</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Box sx={{ my: 2 }}>
@@ -458,7 +648,7 @@ export default function TeamExample() {
             </Accordion>
             <Accordion defaultExpanded>
               <AccordionSummary>
-                <Typography level="title-sm">Languages Spoken</Typography>
+                <Typography level="title-sm">Languages Spoken  (Optional)</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Box sx={{ my: 2 }}>
