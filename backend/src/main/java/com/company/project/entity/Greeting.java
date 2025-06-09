@@ -22,6 +22,19 @@ public class Greeting {
     @Column(nullable = true)
     private Double salary;
 
+    @Column(nullable = false)
+    private String position;
+
+    @Column(nullable = false)
+    private Double bonus;
+    
+    @Column(nullable = false)
+    private int stock;
+    
+    @Column(nullable = false)
+    private String use_device;
+    
+
     public Greeting() {
     }
 
@@ -29,11 +42,12 @@ public class Greeting {
         this.name = name;
     }
 
-    public Greeting(int id, String name, Integer age, Double salary) {
+    public Greeting(int id, String name, Integer age, Double salary, String position) {
         this.id = id;
         this.name = name;
         this.age = age;
         this.salary = salary;
+        this.position = position;
     }
 
     // Getters and setters for new fields
@@ -67,6 +81,38 @@ public class Greeting {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setBonus(Double bonus) {
+        this.bonus =  bonus;
+    }
+
+    public Double getBonus() {
+        return bonus;
+    }
+
+    public void setStock(int stock) {
+        this.stock = stock;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public void setUse_device(String use_device) {
+        this.use_device = use_device;
+    }
+
+    public String getUse_device() {
+        return use_device;
     }
 
     @Override
