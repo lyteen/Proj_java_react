@@ -40,13 +40,13 @@ import Navigation from './components/Navigation';
 type Greeting = {
   id: number;
   name: string;
-  // age: number;         // From Java Integer age;
-  // position: string;    // From Java String position;
-  // active: boolean;     // From Java Boolean active; (for is_active)
-  // salary: number;      // From Java Double salary;
-  // bonus: number | null; // From Java Double bonus; (assuming it might be nullable based on typical usage, though not explicitly marked nullable in your given Java snippet for @Column)
-  // stock: number | null; // From Java Integer stock; (marked nullable in Java code)
-  // use_device: string | null; // From Java String use_device; (marked nullable in Java code)
+  age: number;         // From Java Integer age;
+  position: string;    // From Java String position;
+  //active: boolean;     // From Java Boolean active; (for is_active)
+  salary: number;      // From Java Double salary;
+  bonus: number | null; // From Java Double bonus; (assuming it might be nullable based on typical usage, though not explicitly marked nullable in your given Java snippet for @Column)
+  stock: number | null; // From Java Integer stock; (marked nullable in Java code)
+  use_device: string | null; // From Java String use_device; (marked nullable in Java code)
   // createdAt: string;   // LocalDateTime usually serializes to ISO string
   // updatedAt: string;   // LocalDateTime usually serializes to ISO string
 };
@@ -103,22 +103,37 @@ export default function TeamExample() {
     'Apple': 'https://www.vectorlogo.zone/logos/apple/apple-icon.svg',
   };
 
+  const skills = [
+    'UI design',
+    'Illustration',
+    'SOTA',
+    'HTML',
+    'CSS',
+    'JavaScript',
+    'Java',
+    'Python',
+    'DeepLearning',
+    'Product Management',
+    'Market Analysis',
+    'Graphic Design'
+  ]
+
   const logoUrlValues = Object.values(logoUrls);
   const logoUrlName = Object.keys(logoUrls);
 
   const peopleData = greetingsList.map((greeting: Greeting) => ({
     name: greeting.name,
-    position: 'UI Designer', // Change member position
+    position: greeting.position, // Change member position
     avatar2x: `https://i.pravatar.cc/80?img=${greeting.id % 20}`,
     companyData: [
       {
-        role: 'Senior designer', // Change member position
+        role: greeting.position, // Change member position
         name: logoUrlName[(greeting.id || 0) % logoUrlName.length],
         logo: logoUrlValues[(greeting.id || 0) % logoUrlValues.length],
         years: '2015-now',
       },
     ],
-    skills: ['UI design', 'Illustration'],
+    skills: [skills[greeting.id % skills.length], skills[(greeting.id * 2) % skills.length]],
   }));
 
   // const peopleData = greetingInfo ? [
