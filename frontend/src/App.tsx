@@ -32,10 +32,12 @@ import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import FolderRoundedIcon from '@mui/icons-material/FolderRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import Input from '@mui/joy/Input';
 
 import Layout from './components/Layout';
 import Header from './components/Header';
 import Navigation from './components/Navigation';
+import { handleAddPerson } from './handles/Method';
 
 // import axios from 'axios';
 
@@ -79,6 +81,7 @@ export default function TeamExample() {
       setBonus(0);
       setSalary(0);
       setAge(15);
+      setStock(null);
     }
   };
 
@@ -86,7 +89,7 @@ export default function TeamExample() {
   useEffect(() => {
     const fetchGreeting = async () => {
       try {
-        const response = await fetch("/api/first"); 
+        const response = await fetch("/api/all"); 
         console.log('Fetch response status:', response.status);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -341,15 +344,14 @@ export default function TeamExample() {
             <Button startDecorator={
               <PersonRoundedIcon />}
               size="sm"
-              onClick={() => Layout.handleAddPerson(
-                /* pass other required parameters here */
-                '', // name
-                0, // age
+              onClick={() => handleAddPerson(
+                name,       // Replace with your actual state variables or values
+                age,
                 selectedPosition,
-                0, // salary
-                null, // bonus
-                null, // stock
-                null // use_device
+                salary,
+                bonus,
+                stock,
+                useDevice
               )}
             >
               Add new
@@ -554,6 +556,32 @@ export default function TeamExample() {
                     }}
                     sx={{
                       '& .MuiAutocomplete-input': {
+                        minWidth: '150px',
+                      }
+                    }}
+                  />
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+
+            <Accordion defaultExpanded>
+              <AccordionSummary>
+                <Typography level="title-sm">Stock</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+              <Box sx={{ my: 2 }}>
+                {/* <Typography level="body-sm" sx={{ mb: 1 }}>Stock Quantity</Typography> */}
+                <Input
+                    size="sm"
+                    type="number" // Use type="number" for numerical input
+                    placeholder="Enter Stock Quantity"
+                    value={stock !== null ? stock : ''} // Display empty string for null
+                    onChange={(e) => {
+                      const value = Number(e.target.value);
+                      setStock(isNaN(value) ? null : value); // Set to null if not a valid number
+                    }}
+                    sx={{
+                      '& .MuiInput-input': { // Adjust selector for Joy UI Input
                         minWidth: '150px',
                       }
                     }}
