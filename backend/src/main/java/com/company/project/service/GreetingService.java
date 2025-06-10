@@ -47,4 +47,14 @@ public class GreetingService {
 
         return greetingRepository.save(person);
     }
+
+    public void deletePerson(Integer id) {
+        // Check person with the given ID exists
+        if (!greetingRepository.existsById(id)) {
+            throw new RuntimeException("Person not found with id: " + id);
+        }
+        
+        // Delete person with ID
+        greetingRepository.deleteById(id);
+    }
 }
