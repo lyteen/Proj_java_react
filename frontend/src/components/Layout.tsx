@@ -145,27 +145,8 @@ function SideDrawer(
     </Box>
   );
 }
-
 // ========= End Component =========
 
-
-
-// ========= End Method =========
-
-
-// ========= End Method =========
-
-// ========= End Method =========
-
-
-// ========= End Method =========
-
-// ========= End Method =========
-
-
-// ========= End Method =========
-
-// ========= End Method =========
 
 export default {
   Root,

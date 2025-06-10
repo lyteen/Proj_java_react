@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { NavLink } from 'react-router-dom';
+
 import Chip from '@mui/joy/Chip';
 import List from '@mui/joy/List';
 import ListSubheader from '@mui/joy/ListSubheader';
@@ -28,7 +30,7 @@ export default function Navigation() {
           sx={{ '& .JoyListItemButton-root': { p: '8px' } }}
         >
           <ListItem>
-            <ListItemButton selected>
+            <ListItemButton component={NavLink} to="/" sx={{ '&.active': { bgcolor: 'primary.softBg' } }}>
               <ListItemDecorator>
                 <PeopleRoundedIcon fontSize="small" />
               </ListItemDecorator>
@@ -36,11 +38,11 @@ export default function Navigation() {
             </ListItemButton>
           </ListItem>
           <ListItem>
-            <ListItemButton>
+            <ListItemButton component={NavLink} to ="/Team" sx={{ '&.active': { bgcolor: 'primary.softBg' } }}>
               <ListItemDecorator sx={{ color: 'neutral.500' }}>
                 <AssignmentIndRoundedIcon fontSize="small" />
               </ListItemDecorator>
-              <ListItemContent>Managing accounts</ListItemContent>
+              <ListItemContent>Managing Team</ListItemContent>
             </ListItemButton>
           </ListItem>
           <ListItem>
