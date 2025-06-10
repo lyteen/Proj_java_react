@@ -58,14 +58,22 @@ type Greeting = {
   use_device: string | null; // From Java String use_device; (marked nullable in Java code)
   // createdAt: string;   // LocalDateTime usually serializes to ISO string
   // updatedAt: string;   // LocalDateTime usually serializes to ISO string
+  team: number | null;
+};
+
+type Team = {
+  id: number;
+  name: string;
 };
 
 export default function TeamExample() {
+  
+  // ========= Person Set =========
   const [drawerOpen, setDrawerOpen] = useState(false);
-
   // State to hold the fetched greeting data
   //const [greetingInfo, setGreetingInfo] = useState<Greeting | null>(null);
   const [greetingsList, setGreetingsList] = useState<Greeting[]>([]);
+
   // State for loadding and error handling
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +86,7 @@ export default function TeamExample() {
   const [useDevice, setUseDevice] = useState<string | null>(null);
   const [selectedPosition, setSelectedPosition] = useState<string>('');
 
+
   const handleClearForm = () => {
     if (window.confirm('Are you sure you want to clear all fields?')) {
       setName('');
@@ -89,37 +98,6 @@ export default function TeamExample() {
       setStock(null);
     }
   };
-
-  // useEffect to fetch data when the component mounts
-  useEffect(() => {
-    const fetchGreeting = async () => {
-      try {
-        const response = await fetch("/api/all"); 
-        console.log('Fetch response status:', response.status);
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      /*
-      * Get one Greeting structure
-      */
-      // const data: Greeting = await response.json();
-      // setGreetingInfo(data);
-
-      /*
-      * Get first five Greeting structure
-      */
-      const data: Greeting[] = await response.json();
-      setGreetingsList(data);
-
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchGreeting();
-}, []);
 
   const onAddPerson = async () => {
     try {
@@ -157,7 +135,104 @@ export default function TeamExample() {
       }
     }
   };
-  
+  // ========= End =========
+
+  // ========= Team Set =========
+  const [teamsList, setTeamsList] = useState<Team[]>([]);
+  const [allUnssigned, setAllUnassigned] = useState<Greeting[]>([]);
+
+  const TeamBox = ({
+    team,
+    allUnassigned,
+    setAllUnassigned,
+  }: {
+    team: Team;
+    allUnassigned: Greeting[];
+    setAllUnassigned: React.Dispatch<React.SetStateAction<Greeting[]>>;
+  }) => {
+    const [selectedMembers, setSelectedMembers] = useState<Greeting[]>([]);
+    
+    // Optional member
+    const availableMembers = allUnassigned.filter((member) => member.team === null);
+    
+    // Deal with submit
+    const handleSubmit = () => {
+      if (selectedMembers.length === 0) return;
+      
+      const selectedIds = selectedMembers.map((m) => m.id);
+
+      // Update AllUnassigned include SelectedMember
+      setAllUnassigned((prev) =>
+        prev.map(
+          (member) => selectedIds.includes(member.id)
+              ? { ...member, team: team.id}
+              : member
+        ).filter((member) => !selectedIds.includes(member.id) || member.team !== team.id)
+      );
+
+      // Clear SelectedMember
+      setSelectedMembers([]);
+    };
+    
+    return (
+      <div style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px' }}>
+        <h3>{team.name}</h3>
+        <Autocomplete
+          size="sm"
+          multiple
+          placeholder="Enter member you choose"
+          options={availableMembers}
+          getOptionLabel={(option: Greeting) => option.name}
+          value={selectedMembers}
+          onChange={(e, newValue) => {setSelectedMembers(newValue);}}
+          filterSelectedOptions
+        />
+        <button onClick={handleSubmit}>Add Members</button>
+      </div>
+    );
+  };
+  // ========= End =========
+
+  // useEffect to fetch data when the component mounts
+  useEffect(() => {
+    // Member fetching
+    const fetchGreeting = async () => {
+      try {
+        const response = await fetch("/api/all"); 
+        console.log('Fetch response status:', response.status);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data: Greeting[] = await response.json();
+        setGreetingsList(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Team fetching
+    const fetchTeam = async () => {
+      try {
+        const response_team = await fetch("/api/team");
+        console.log('Team Fetch response status:', response_team.status);
+        if (!response_team.ok) {
+          throw new Error(`HTTP error! Status: ${response_team.status}`);
+        }
+        const data_team: Team[] = await response_team.json();
+        setTeamsList(data_team);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  fetchGreeting();
+  fetchTeam();
+}, []);
+
   const logoUrls = {
     'Dribble': 'https://www.vectorlogo.zone/logos/dribbble/dribbble-icon.svg',
     'Pinterest': 'https://www.vectorlogo.zone/logos/pinterest/pinterest-icon.svg',
@@ -820,10 +895,53 @@ export default function TeamExample() {
                 justifyContent: 'space-between',
               }}
             >
-            <Typography level="title-lg" textColor="text.secondary" component="h1">
+            <Typography level="title-lg" textColor="title-sm" component="h1">
               TeamView
             </Typography>
             </Box>
+            
+            <div>
+              {teamsList.map((team) => (
+                <TeamBox
+                  key={team.id}
+                  team={team}
+                  allUnassigned={allUnssigned}
+                  setAllUnassigned={setAllUnassigned}
+                />
+              ))}
+            </div>
+            {/* <Accordion defaultExpanded>
+              <AccordionSummary>
+                <Typography level="title-lg" textColor="text.secondary" component="h1">
+                  Team.name
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+                >
+                  <Autocomplete
+                    size="sm"
+                    multiple
+                    placeholder="Enter member you choose"
+                    option={unassignMembers}
+                    getOptionLabel={(option: Greeting) => option.name}
+                    value={selectedMembers}
+                    onChange={(e, newValue) => {
+                      setSelectedMembers(newValue);
+                    }}
+                    filterSelectedOptions
+                  />
+                </Box>
+              </AccordionDetails>
+            </Accordion> */}
+
+
           </Layout.SidePane>
           </Layout.Main>
         </Layout.Root>
