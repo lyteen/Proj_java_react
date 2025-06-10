@@ -32,12 +32,13 @@ import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import FolderRoundedIcon from '@mui/icons-material/FolderRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import DeleteForeverRoundedIcon from '@mui/icons-material/DeleteForeverRounded';
 import Input from '@mui/joy/Input';
 
 import Layout from './components/Layout';
 import Header from './components/Header';
 import Navigation from './components/Navigation';
-import { handleAddPerson } from './handles/Method';
+import { handleAddPerson, handleDeletePerson } from './handles/Method';
 
 // import axios from 'axios';
 
@@ -115,6 +116,43 @@ export default function TeamExample() {
   };
   fetchGreeting();
 }, []);
+
+  const onAddPerson = async () => {
+    try {
+      const newPerson = await handleAddPerson(
+        name,
+        age,
+        selectedPosition,
+        salary,
+        bonus,
+        stock,
+        useDevice
+      );
+
+      // Update the UI 
+      if (newPerson) {
+        setGreetingsList(currentGreetings => [...currentGreetings, newPerson]);
+        handleClearForm();
+      }
+    } catch (error) {
+      console.error("Failed to add person:", error);
+    }
+  };
+
+  const onDeletePerson = async (id: number) => {
+    if (window.confirm('Are you sure you want to delete this person? This action cannot be undone.')) {
+      try {
+          await handleDeletePerson(id);
+          // On successful deletion, filter out the person from the local state to update the UI
+          setGreetingsList(currentGreetings =>
+              currentGreetings.filter(person => person.id !== id)
+          );
+      } catch (error) {
+          console.error("Failed to delete person:", error);
+          // Optionally, show an error to the user that deletion failed
+      }
+    }
+  };
   
   const logoUrls = {
     'Dribble': 'https://www.vectorlogo.zone/logos/dribbble/dribbble-icon.svg',
@@ -158,6 +196,7 @@ export default function TeamExample() {
   const logoUrlName = Object.keys(logoUrls);
 
   const peopleData = greetingsList.map((greeting: Greeting) => ({
+    id: greeting.id,
     name: greeting.name,
     position: greeting.position, // Change member position
     avatar2x: `https://i.pravatar.cc/80?img=${greeting.id % 20}`,
@@ -171,89 +210,6 @@ export default function TeamExample() {
     ],
     skills: [skills[greeting.id % skills.length], skills[(greeting.id * 2) % skills.length]],
   }));
-
-  // const peopleData = greetingInfo ? [
-  //   {
-  //     name: greetingInfo.name,
-  //     position: 'UI Designer',
-  //     avatar2x: 'https://i.pravatar.cc/80?img=7',
-  //     companyData: [
-  //       {
-  //         role: 'Senior designer',
-  //         name: 'Dribbble',
-  //         logo: 'https://www.vectorlogo.zone/logos/dribbble/dribbble-icon.svg',
-  //         years: '2015-now',
-  //       },
-  //       {
-  //         role: 'Designer',
-  //         name: 'Pinterest',
-  //         logo: 'https://www.vectorlogo.zone/logos/pinterest/pinterest-icon.svg',
-  //         years: '2012-2015',
-  //       },
-  //     ],
-  //     skills: ['UI design', 'Illustration'],
-  //   },
-  //   {
-  //     name: 'John Doe',
-  //     position: 'Frontend Developer',
-  //     avatar2x: 'https://i.pravatar.cc/80?img=8',
-  //     companyData: [
-  //       {
-  //         role: 'UI Engineer',
-  //         name: 'Google',
-  //         logo: 'https://www.vectorlogo.zone/logos/google/google-icon.svg',
-  //         years: '2018-now',
-  //       },
-  //       {
-  //         role: 'Frontend Developer',
-  //         name: 'Amazon',
-  //         logo: 'https://www.vectorlogo.zone/logos/amazon/amazon-icon.svg',
-  //         years: '2015-2018',
-  //       },
-  //     ],
-  //     skills: ['HTML', 'CSS', 'JavaScript'],
-  //   },
-  //   {
-  //     name: 'Alice Johnson',
-  //     position: 'Product Manager',
-  //     avatar2x: 'https://i.pravatar.cc/80?img=9',
-  //     companyData: [
-  //       {
-  //         role: 'Product Manager',
-  //         name: 'Microsoft',
-  //         logo: 'https://www.vectorlogo.zone/logos/microsoft/microsoft-icon.svg',
-  //         years: '2016-now',
-  //       },
-  //       {
-  //         role: 'Product Analyst',
-  //         name: 'IBM',
-  //         logo: 'https://www.vectorlogo.zone/logos/ibm/ibm-icon.svg',
-  //         years: '2013-2016',
-  //       },
-  //     ],
-  //     skills: ['Product Management', 'Market Analysis'],
-  //   },
-  //   {
-  //     name: 'Eva Brown',
-  //     position: 'Graphic Designer',
-  //     avatar2x: 'https://i.pravatar.cc/80?img=10',
-  //     companyData: [
-  //       {
-  //         role: 'Art Director',
-  //         name: 'Adobe',
-  //         logo: 'https://www.vectorlogo.zone/logos/adobe/adobe-icon.svg',
-  //         years: '2019-now',
-  //       },
-  //       {
-  //         role: 'Graphic Designer',
-  //         name: 'Apple',
-  //         logo: 'https://www.vectorlogo.zone/logos/apple/apple-icon.svg',
-  //         years: '2016-2019',
-  //       },
-  //     ],
-  //     skills: ['Graphic Design', 'Illustration'],
-  //   },
-  // ] : [];
 
   return (
     <CssVarsProvider disableTransitionOnChange>
@@ -344,16 +300,8 @@ export default function TeamExample() {
             <Button startDecorator={
               <PersonRoundedIcon />}
               size="sm"
-              onClick={() => handleAddPerson(
-                name,       // Replace with your actual state variables or values
-                age,
-                selectedPosition,
-                salary,
-                bonus,
-                stock,
-                useDevice
-              )}
-            >
+              onClick={onAddPerson}
+              >
               Add new
             </Button>
           </Box>
@@ -707,13 +655,14 @@ export default function TeamExample() {
               gap: 2,
             }}
           >
-            {peopleData.map((person, index) => (
+            {peopleData.map((person) => (
               <Sheet
-                key={index}
+                key={person.id}
                 component="li"
                 variant="outlined"
                 sx={{ borderRadius: 'sm', p: 2, listStyle: 'none' }}
               >
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', alignItems: 'flex-start' }}></Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <Avatar
                     variant="outlined"
@@ -725,6 +674,23 @@ export default function TeamExample() {
                     <Typography level="title-md">{person.name}</Typography>
                     <Typography level="body-xs">{person.position}</Typography>
                   </div>
+
+                  <Button
+                   size="sm"
+                   variant="soft"
+                  //  color="danger"
+                   onClick={() => onDeletePerson(person.id)}
+                   sx={{
+                    '--Button-gap': '0.3rem',
+                    padding: '2px 6px',
+                    fontSize: '0.75rem',
+                    minHeight: 'auto',
+                    lineHeight: 1.2,
+                   }}
+                  >
+                      {/* <DeleteForeverRoundedIcon /> */}
+                      Delete
+                  </Button>
                 </Box>
                 <Divider component="div" sx={{ my: 2 }} />
                 <List sx={{ '--ListItemDecorator-size': '40px', gap: 2 }}>

@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 // ========= Method =========
 export const handleAddPerson = async (
     name: string,
@@ -27,7 +25,29 @@ export const handleAddPerson = async (
   
       const result = await response.json();
       console.log('Person added:', result);
+      
+      return result;
+      
     } catch (error) {
       console.error('Error adding person:', error);
     }
 };
+
+export const handleDeletePerson = async (id: number): Promise<void> => {
+  try {
+    const response = await fetch(`/api/deletePerson/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText || 'Failed to delete'}`);
+    }
+    
+    console.log(`Person with id ${id} deleted successfully.`);
+  } catch (error) {
+    console.error('Error deleting person:', error);
+    throw error;
+  }
+};
+// ========= End =========
