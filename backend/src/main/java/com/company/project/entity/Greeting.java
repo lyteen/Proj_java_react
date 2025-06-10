@@ -5,13 +5,14 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 
 @Entity
 @Table(name = "greetings")
 public class Greeting {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(nullable = false)
     private String name;
@@ -22,16 +23,16 @@ public class Greeting {
     @Column(nullable = true)
     private Double salary;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String position;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Double bonus;
     
-    @Column(nullable = false)
+    @Column(nullable = true)
     private int stock;
     
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String use_device;
     
 
