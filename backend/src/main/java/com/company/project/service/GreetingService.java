@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class GreetingService {
@@ -56,5 +57,17 @@ public class GreetingService {
         
         // Delete person with ID
         greetingRepository.deleteById(id);
+    }
+
+    public Greeting updatePersonTeam(Integer id, Greeting updatePerson) {
+        Optional<Greeting> optional = greetingRepository.findById(id);
+        if (!optional.isPresent()) {
+            throw new RuntimeException("Person not found with id: " + id);
+        }
+        
+        Greeting person = optional.get();
+        person.setTeam(updatePerson.getTeam());
+        
+        return greetingRepository.save(person);
     }
 }

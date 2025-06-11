@@ -35,6 +35,8 @@ public class Greeting {
     @Column(nullable = true)
     private String use_device;
     
+    @Column(nullable = true)
+    private Integer team;
 
     public Greeting() {
     }
@@ -43,7 +45,7 @@ public class Greeting {
         this.name = name;
     }
 
-    public Greeting(int id, String name, Integer age, Double salary, String position) {
+    public Greeting(int id, String name, int age, Double salary, String position) {
         this.id = id;
         this.name = name;
         this.age = age;
@@ -52,11 +54,11 @@ public class Greeting {
     }
 
     // Getters and setters for new fields
-    public Integer getAge() {
+    public int getAge() {
         return age;
     }
 
-    public void setAge(Integer age) {
+    public void setAge(int age) {
         this.age = age;
     }
 
@@ -100,11 +102,11 @@ public class Greeting {
         return bonus;
     }
 
-    public void setStock(int stock) {
+    public void setStock(Integer stock) {
         this.stock = stock;
     }
 
-    public int getStock() {
+    public Integer getStock() {
         return stock;
     }
 
@@ -114,6 +116,14 @@ public class Greeting {
 
     public String getUse_device() {
         return use_device;
+    }
+
+    public Integer getTeam() {
+        return team;
+    }
+
+    public void setTeam(Integer team) {
+        this.team = team;
     }
 
     @Override
