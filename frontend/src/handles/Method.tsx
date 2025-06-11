@@ -50,4 +50,50 @@ export const handleDeletePerson = async (id: number): Promise<void> => {
     throw error;
   }
 };
+
+export const handleAddTeam = async (
+  name: string,
+) => {
+  const addNew = { name };
+
+  try {
+    const response = await fetch('/api/addTeam', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(addNew),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('Team added:', result);
+    
+    return result;
+    
+  } catch (error) {
+    console.error('Error adding Team:', error);
+  }
+};
+
+export const handleDeleteTeam = async (id: number): Promise<void> => {
+  try {
+    const response = await fetch(`/api/deleteTeam/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText || 'Failed to delete'}`);
+    }
+    
+    console.log(`Team with id ${id} deleted successfully.`);
+  } catch (error) {
+    console.error('Error deleting Team:', error);
+    throw error;
+  }
+};
 // ========= End =========

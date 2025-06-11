@@ -41,7 +41,7 @@ import Input from '@mui/joy/Input';
 import Layout from './components/Layout';
 import Header from './components/Header';
 import Navigation from './components/Navigation';
-import { handleAddPerson, handleDeletePerson } from './handles/Method';
+import { handleAddPerson, handleDeletePerson, handleAddTeam, handleDeleteTeam } from './handles/Method';
 import ManagingTeam from './components/ManagingTeam';
 
 // import axios from 'axios';
@@ -139,36 +139,87 @@ export default function TeamExample() {
 
   // ========= Team Set =========
   const [teamsList, setTeamsList] = useState<Team[]>([]);
-  const [allUnssigned, setAllUnassigned] = useState<Greeting[]>([]);
+  const [teamName, setTeamName] = useState('');
+
+  const onAddTeam = async () => {
+    try {
+      const newTeam = await handleAddTeam(
+        teamName,
+      );
+
+      // Update the UI 
+      if (newTeam) {
+        setTeamsList(currentTeams => [...currentTeams, newTeam]);
+        handleClearForm();
+      }
+    } catch (error) {
+      console.error("Failed to add person:", error);
+    }
+  };
+
+  const onDeleteTeam = async (id: number) => {
+    if (window.confirm('Are you sure you want to delete this team? This action cannot be undone.')) {
+      try {
+          await handleDeleteTeam(id);
+          // On successful deletion, filter out the person from the local state to update the UI
+            setTeamsList(currentTeams =>
+              currentTeams.filter(Team => Team.id !== id)
+          );
+      } catch (error) {
+          console.error("Failed to delete team:", error);
+          // Optionally, show an error to the user that deletion failed
+      }
+    }
+  };
 
   const TeamBox = ({
     team,
-    allUnassigned,
-    setAllUnassigned,
+    allMembers,
+    setAllMembers,
   }: {
     team: Team;
-    allUnassigned: Greeting[];
-    setAllUnassigned: React.Dispatch<React.SetStateAction<Greeting[]>>;
+    allMembers: Greeting[];
+    setAllMembers: React.Dispatch<React.SetStateAction<Greeting[]>>;
   }) => {
     const [selectedMembers, setSelectedMembers] = useState<Greeting[]>([]);
     
     // Optional member
-    const availableMembers = allUnassigned.filter((member) => member.team === null);
+    const availableMembers = allMembers.filter((member) => member.team === null);
     
     // Deal with submit
-    const handleSubmit = () => {
+    const handleAssignToTeam = async () => {
       if (selectedMembers.length === 0) return;
-      
-      const selectedIds = selectedMembers.map((m) => m.id);
 
-      // Update AllUnassigned include SelectedMember
-      setAllUnassigned((prev) =>
-        prev.map(
-          (member) => selectedIds.includes(member.id)
-              ? { ...member, team: team.id}
-              : member
-        ).filter((member) => !selectedIds.includes(member.id) || member.team !== team.id)
+      const selectedIds = selectedMembers.map((m) => m.id);
+      const updatedMembers = await Promise.all(
+        availableMembers.map(async (member) => {
+          if (selectedIds.includes(member.id)) {
+            const updated = { ...member, team: team.id };
+
+            // Sends to backend
+            try {
+              const response = await fetch(`/api/updatePersonTeam/${member.id}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updated),
+              });
+
+              if (!response.ok) {
+                throw new Error(`Failed to update member ${member.id}`);
+              }
+    
+              return updated; // Return the updated member
+            } catch (error) {
+              console.error(error);
+              return member; // Return original on failure
+            }
+          }
+          return member;
+        })
       );
+      setAllMembers(updatedMembers);
 
       // Clear SelectedMember
       setSelectedMembers([]);
@@ -187,7 +238,23 @@ export default function TeamExample() {
           onChange={(e, newValue) => {setSelectedMembers(newValue);}}
           filterSelectedOptions
         />
-        <button onClick={handleSubmit}>Add Members</button>
+        <Button onClick={handleAssignToTeam}> Add Members</Button>
+        <Button
+          size="sm"
+          variant="soft"
+        //  color="danger"
+          onClick={() => onDeleteTeam(team.id)}
+          sx={{
+          '--Button-gap': '0.3rem',
+          padding: '2px 6px',
+          fontSize: '0.75rem',
+          minHeight: 'auto',
+          lineHeight: 1.2,
+          }}
+        >
+          {/* <DeleteForeverRoundedIcon /> */}
+          Delete
+        </Button>
       </div>
     );
   };
@@ -215,7 +282,7 @@ export default function TeamExample() {
     // Team fetching
     const fetchTeam = async () => {
       try {
-        const response_team = await fetch("/api/team");
+        const response_team = await fetch("/api/Team");
         console.log('Team Fetch response status:', response_team.status);
         if (!response_team.ok) {
           throw new Error(`HTTP error! Status: ${response_team.status}`);
@@ -861,7 +928,7 @@ export default function TeamExample() {
                 <Button startDecorator={
                   <Diversity3Icon />}
                   size="sm"
-                  // onClick={onAddTeam}
+                  onClick={onAddTeam}
                   >
                   Add new
                 </Button>
@@ -878,9 +945,18 @@ export default function TeamExample() {
                   placeholder="Enter team name (e.g. Bro)"
                   freeSolo
                   options={[]}
-                  value={selectedPosition}
+                  value={teamName}
                   onChange={(e, newValue) => {
-                    setSelectedPosition(newValue || '');
+                    setTeamName(newValue || '');
+                  }}
+                  inputValue={teamName}
+                  onInputChange={(e, newInputValue) => {
+                    setTeamName(newInputValue);
+                  }}
+                  sx={{
+                    '& .MuiAutocomplete-input': {
+                      minWidth: '150px',
+                    }
                   }}
                 />
               </Box>
@@ -899,17 +975,18 @@ export default function TeamExample() {
               TeamView
             </Typography>
             </Box>
-            
             <div>
               {teamsList.map((team) => (
                 <TeamBox
                   key={team.id}
                   team={team}
-                  allUnassigned={allUnssigned}
-                  setAllUnassigned={setAllUnassigned}
+                  allMembers={greetingsList}
+                  setAllMembers={setGreetingsList}
                 />
               ))}
             </div>
+
+
             {/* <Accordion defaultExpanded>
               <AccordionSummary>
                 <Typography level="title-lg" textColor="text.secondary" component="h1">
